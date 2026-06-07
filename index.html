@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azzari · Ads Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0a; --bg2: #111111; --bg3: #1a1a1a;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+    --text: #f0ede8; --muted: #888580;
+    --accent: #c8f060; --accent2: #f0c060;
+    --danger: #ff5f5f; --success: #60d890;
+    --font-display: 'Syne', sans-serif; --font-mono: 'DM Mono', monospace;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(12px); z-index: 100; }
+  .logo { font-size: 18px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .logo span { color: var(--accent); }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .status-dot { display: flex; align-items: center; gap: 6px; font-size: 12px; font-family: var(--font-mono); color: var(--muted); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+  .dot.live { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .btn { font-family: var(--font-mono); font-size: 11px; padding: 7px 14px; border: 1px solid var(--border2); background: transparent; color: var(--text); border-radius: 4px; cursor: pointer; letter-spacing: 0.05em; transition: all 0.15s; }
+  .btn:hover { background: var(--bg3); border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); color: #0a0a0a; border-color: var(--accent); font-weight: 500; }
+  .btn.primary:hover { background: #d4f570; }
+  main { padding: 32px; max-width: 1200px; margin: 0 auto; }
+  .setup-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 40px; max-width: 560px; margin: 80px auto; }
+  .setup-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .setup-card p { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+  .input-group { margin-bottom: 16px; }
+  .input-group label { display: block; font-size: 11px; font-family: var(--font-mono); color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  input[type="text"], input[type="password"] { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-family: var(--font-mono); font-size: 13px; color: var(--text); outline: none; transition: border-color 0.15s; }
+  input:focus { border-color: var(--accent); }
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; position: relative; overflow: hidden; }
+  .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); opacity: 0.3; }
+  .metric-card.success::before { background: var(--success); opacity: 1; }
+  .metric-card.warn::before { background: var(--accent2); opacity: 1; }
+  .metric-card.danger::before { background: var(--danger); opacity: 1; }
+  .metric-card.accent::before { background: var(--accent); opacity: 1; }
+  .metric-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .metric-val { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .metric-sub { font-size: 11px; font-family: var(--font-mono); color: var(--muted); }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .section-title { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: var(--bg3); }
+  th { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 12px 16px; text-align: left; font-weight: 400; white-space: nowrap; }
+  td { padding: 11px 16px; border-top: 1px solid var(--border); vertical-align: middle; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .camp-name { font-weight: 500; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badge { display: inline-block; font-family: var(--font-mono); font-size: 10px; padding: 3px 8px; border-radius: 3px; letter-spacing: 0.05em; }
+  .badge-active { background: rgba(96,216,144,0.12); color: var(--success); }
+  .badge-paused { background: rgba(136,133,128,0.12); color: var(--muted); }
+  .roas-good { color: var(--success); font-family: var(--font-mono); font-weight: 500; }
+  .roas-mid { color: var(--accent2); font-family: var(--font-mono); }
+  .roas-bad { color: var(--danger); font-family: var(--font-mono); }
+  .roas-na { color: var(--muted); font-family: var(--font-mono); }
+  .mono { font-family: var(--font-mono); }
+  .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; color: var(--muted); }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-bar { background: rgba(255,95,95,0.08); border: 1px solid rgba(255,95,95,0.2); border-radius: 8px; padding: 14px 18px; font-size: 13px; color: #ff9090; font-family: var(--font-mono); margin-bottom: 20px; }
+  .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .insight-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+  .insight-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .insight-tag.good { color: var(--success); }
+  .insight-tag.warn { color: var(--accent2); }
+  .insight-tag.bad { color: var(--danger); }
+  .insight-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .insight-body { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  .creatives-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .creative-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .creative-img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--bg3); display: block; }
+  .creative-img-placeholder { width: 100%; aspect-ratio: 1; background: var(--bg3); display: flex; align-items: center; justify-content: center; color: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+  .creative-info { padding: 12px; }
+  .creative-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+  .creative-meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+  select { background: var(--bg3); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 11px; padding: 6px 10px; border-radius: 4px; outline: none; cursor: pointer; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .tab { font-family: var(--font-mono); font-size: 11px; padding: 7px 14px; border: 1px solid var(--border); background: transparent; color: var(--muted); border-radius: 4px; cursor: pointer; letter-spacing: 0.05em; transition: all 0.15s; }
+  .tab.active { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+  footer { text-align: center; padding: 24px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 40px; }
+  @media (max-width: 768px) { .metrics-grid { grid-template-columns: 1fr 1fr; } .insights-grid { grid-template-columns: 1fr; } main { padding: 20px; } header { padding: 16px 20px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">AZZARI <span>·</span> ADS</div>
+  <div class="header-right">
+    <div class="status-dot"><div class="dot" id="statusDot"></div><span id="statusText">desconectado</span></div>
+    <select id="dateRange" onchange="loadData()" style="display:none">
+      <option value="last_7d">7 días</option>
+      <option value="last_30d">30 días</option>
+      <option value="last_90d" selected>90 días</option>
+      <option value="this_year">Este año</option>
+    </select>
+    <button class="btn" id="refreshBtn" onclick="loadData()" style="display:none">↻ Actualizar</button>
+    <button class="btn" id="logoutBtn" onclick="logout()" style="display:none">Salir</button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="setup-card" id="setupCard">
+    <h2>Azzari Ads Dashboard</h2>
+    <p>Introduce tu Access Token de Meta para ver tus campañas y creatividades en tiempo real.</p>
+    <div class="input-group">
+      <label>Access Token</label>
+      <input type="password" id="tokenInput" placeholder="EAAe..." />
+    </div>
+    <button class="btn primary" onclick="connect()" style="width:100%;margin-top:8px">Conectar →</button>
+    <p style="margin-top:16px;font-size:12px;color:#555">El token se guarda en tu navegador. No se envía a ningún servidor externo.</p>
+  </div>
+</main>
+
+<footer>Azzari Ads Dashboard · Meta Marketing API</footer>
+
+<script>
+let TOKEN = '';
+let adAccountId = '';
+const BASE = window.location.origin;
+
+function setStatus(live, text) {
+  document.getElementById('statusDot').className = 'dot' + (live ? ' live' : '');
+  document.getElementById('statusText').textContent = text;
+}
+
+async function apiFetch(path, params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  const url = `${BASE}/api/meta?path=${encodeURIComponent(path)}${qs ? '&' + qs : ''}`;
+  const res = await fetch(url, { headers: { 'Authorization': `Bearer ${TOKEN}` } });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  return data;
+}
+
+async function connect() {
+  TOKEN = document.getElementById('tokenInput').value.trim();
+  if (!TOKEN) return;
+  localStorage.setItem('meta_token', TOKEN);
+  await loadData();
+}
+
+function logout() {
+  localStorage.removeItem('meta_token');
+  TOKEN = ''; adAccountId = '';
+  location.reload();
+}
+
+async function loadData() {
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="loading-state"><div class="spinner"></div><span style="font-family:var(--font-mono);font-size:13px">Conectando con Meta...</span></div>';
+  setStatus(false, 'conectando...');
+  try {
+    if (!adAccountId) {
+      const accounts = await apiFetch('me/adaccounts', { fields: 'name,account_id' });
+      const azzari = accounts.data.find(a => a.name.toLowerCase().includes('azzari')) || accounts.data[0];
+      adAccountId = azzari.id;
+    }
+    const preset = document.getElementById('dateRange').value || 'last_90d';
+    const fields = `name,status,insights.date_preset(${preset}){spend,impressions,reach,clicks,ctr,cpc,cpm,frequency,purchase_roas,actions,cost_per_action_type,action_values}`;
+    const camps = await apiFetch(`${adAccountId}/campaigns`, { fields, limit: 100 });
+    setStatus(true, 'en vivo · azzari glasses');
+    document.getElementById('refreshBtn').style.display = '';
+    document.getElementById('logoutBtn').style.display = '';
+    document.getElementById('dateRange').style.display = '';
+    renderDashboard(camps.data);
+  } catch(e) {
+    main.innerHTML = `<div style="max-width:560px;margin:80px auto"><div class="error-bar">Error: ${e.message}</div><div class="setup-card"><h2>Reconectar</h2><p>El token puede haber expirado.</p><div class="input-group"><label>Access Token</label><input type="password" id="tokenInput" style="width:100%" /></div><button class="btn primary" onclick="connect()" style="width:100%;margin-top:8px">Reintentar →</button></div></div>`;
+    setStatus(false, 'error');
+  }
+}
+
+async function loadCreatives() {
+  const main = document.getElementById('main');
+  const creativeSection = document.getElementById('creativeSection');
+  if (creativeSection) { creativeSection.remove(); return; }
+
+  const loading = document.createElement('div');
+  loading.id = 'creativeSection';
+  loading.innerHTML = '<div class="loading-state"><div class="spinner"></div><span style="font-family:var(--font-mono);font-size:13px">Cargando creatividades...</span></div>';
+  main.appendChild(loading);
+
+  try {
+    const preset = document.getElementById('dateRange').value || 'last_90d';
+    const fields = `name,status,adcreatives{name,title,body,image_url,thumbnail_url,object_story_spec},insights.date_preset(${preset}){spend,purchase_roas,actions}`;
+    const ads = await apiFetch(`${adAccountId}/ads`, { fields, limit: 50 });
+
+    let html = `<div style="margin-bottom:16px" class="section-header"><div class="section-title">Creatividades · ${ads.data.length} anuncios</div></div><div class="creatives-grid">`;
+
+    for (const ad of ads.data) {
+      const cr = ad.adcreatives?.data?.[0];
+      const ins = ad.insights?.data?.[0];
+      const roas = ins?.purchase_roas?.[0]?.value ? parseFloat(ins.purchase_roas[0].value).toFixed(2) + 'x' : '—';
+      const spend = ins?.spend ? parseFloat(ins.spend).toFixed(0) + '€' : '—';
+      const imgUrl = cr?.image_url || cr?.thumbnail_url || '';
+      const roasClass = ins?.purchase_roas?.[0]?.value >= 2 ? 'roas-good' : ins?.purchase_roas?.[0]?.value >= 1.5 ? 'roas-mid' : ins?.purchase_roas?.[0]?.value > 0 ? 'roas-bad' : 'roas-na';
+
+      html += `<div class="creative-card">
+        ${imgUrl ? `<img class="creative-img" src="${imgUrl}" alt="${ad.name}" onerror="this.style.display='none'">` : `<div class="creative-img-placeholder">sin imagen</div>`}
+        <div class="creative-info">
+          <div class="creative-name" title="${ad.name}">${ad.name}</div>
+          ${cr?.title ? `<div class="creative-meta" style="margin-bottom:4px">${cr.title.substring(0,40)}${cr.title.length>40?'...':''}</div>` : ''}
+          <div class="creative-meta">Gasto: ${spend} · ROAS: <span class="${roasClass}">${roas}</span></div>
+        </div>
+      </div>`;
+    }
+    html += '</div>';
+    loading.innerHTML = html;
+  } catch(e) {
+    loading.innerHTML = `<div class="error-bar">Error cargando creatividades: ${e.message}</div>`;
+  }
+}
+
+function getVal(actions, type) {
+  return parseFloat((actions || []).find(a => a.action_type === type)?.value || 0);
+}
+
+function renderDashboard(campaigns) {
+  let totalSpend = 0, totalPurchases = 0, totalImpressions = 0;
+  const rows = [];
+  for (const c of campaigns) {
+    const ins = c.insights?.data?.[0];
+    if (!ins || parseFloat(ins.spend || 0) === 0) continue;
+    const spend = parseFloat(ins.spend || 0);
+    const impressions = parseInt(ins.impressions || 0);
+    const purchases = getVal(ins.actions, 'purchase') || getVal(ins.actions, 'offsite_conversion.fb_pixel_purchase');
+    const revenue = getVal(ins.action_values, 'purchase') || getVal(ins.action_values, 'offsite_conversion.fb_pixel_purchase');
+    const roas = ins.purchase_roas?.[0]?.value ? parseFloat(ins.purchase_roas[0].value) : (spend > 0 && revenue > 0 ? revenue / spend : 0);
+    const cpa = purchases > 0 ? spend / purchases : 0;
+    totalSpend += spend; totalPurchases += purchases; totalImpressions += impressions;
+    rows.push({ name: c.name, status: c.status, spend, impressions, purchases, roas, cpa, ctr: parseFloat(ins.ctr||0), cpm: parseFloat(ins.cpm||0), freq: parseFloat(ins.frequency||0) });
+  }
+  rows.sort((a, b) => b.spend - a.spend);
+  const avgRoas = totalSpend > 0 ? rows.reduce((s,r) => s + r.roas * r.spend, 0) / totalSpend : 0;
+  const avgCpa = totalPurchases > 0 ? totalSpend / totalPurchases : 0;
+  const winners = rows.filter(r => r.roas >= 2);
+  const losers = rows.filter(r => r.roas > 0 && r.roas < 1);
+  const active = rows.filter(r => r.status === 'ACTIVE');
+  function rc(r) { return r <= 0 ? 'roas-na' : r >= 2 ? 'roas-good' : r >= 1.5 ? 'roas-mid' : 'roas-bad'; }
+  function fmt(n) { return n.toLocaleString('es-ES', {maximumFractionDigits:0}); }
+  function fmtE(n) { return n.toFixed(2) + '€'; }
+
+  document.getElementById('main').innerHTML = `
+    <div class="metrics-grid">
+      <div class="metric-card accent"><div class="metric-label">Gasto total</div><div class="metric-val">${fmt(totalSpend)}€</div><div class="metric-sub">${rows.length} campañas con datos</div></div>
+      <div class="metric-card success"><div class="metric-label">Compras</div><div class="metric-val">${fmt(totalPurchases)}</div><div class="metric-sub">CPA medio ${avgCpa > 0 ? fmtE(avgCpa) : '—'}</div></div>
+      <div class="metric-card ${avgRoas >= 2 ? 'success' : avgRoas >= 1.5 ? 'warn' : 'danger'}"><div class="metric-label">ROAS medio</div><div class="metric-val">${avgRoas.toFixed(2)}x</div><div class="metric-sub">${winners.length} winners · ${losers.length} losers</div></div>
+      <div class="metric-card"><div class="metric-label">Impresiones</div><div class="metric-val">${(totalImpressions/1000).toFixed(0)}k</div><div class="metric-sub">${active.length} campañas activas</div></div>
+    </div>
+    <div class="insights-grid">
+      ${winners.length > 0 ? `<div class="insight-card"><div class="insight-tag good">· Winner</div><div class="insight-title">${winners[0].name}</div><div class="insight-body">ROAS ${winners[0].roas.toFixed(2)}x · ${fmt(winners[0].purchases)} compras · ${fmtE(winners[0].spend)} · CPA ${fmtE(winners[0].cpa)}</div></div>` : ''}
+      ${losers.length > 0 ? `<div class="insight-card"><div class="insight-tag bad">· Loser</div><div class="insight-title">${losers.sort((a,b)=>b.spend-a.spend)[0].name}</div><div class="insight-body">ROAS ${losers[0].roas.toFixed(2)}x · ${fmtE(losers[0].spend)} sin retorno</div></div>` : ''}
+      ${avgRoas < 2 ? `<div class="insight-card"><div class="insight-tag warn">· Alerta</div><div class="insight-title">ROAS por debajo del objetivo</div><div class="insight-body">Medio ${avgRoas.toFixed(2)}x. Objetivo mínimo: 2.5x para ser rentable.</div></div>` : ''}
+      ${active.length <= 1 ? `<div class="insight-card"><div class="insight-tag bad">· Riesgo</div><div class="insight-title">Solo ${active.length} campaña activa</div><div class="insight-body">Activa 2-3 campañas basadas en tus winners históricos.</div></div>` : ''}
+    </div>
+    <div class="section-header">
+      <div class="section-title">Campañas</div>
+      <button class="btn" onclick="loadCreatives()">Ver creatividades</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Campaña</th><th>Estado</th><th>Gasto</th><th>Compras</th><th>CPA</th><th>ROAS</th><th>CTR</th><th>CPM</th><th>Freq.</th></tr></thead>
+        <tbody>${rows.map(r => `<tr><td><div class="camp-name" title="${r.name}">${r.name}</div></td><td><span class="badge ${r.status==='ACTIVE'?'badge-active':'badge-paused'}">${r.status==='ACTIVE'?'activa':'pausada'}</span></td><td class="mono">${fmt(r.spend)}€</td><td class="mono">${r.purchases>0?fmt(r.purchases):'—'}</td><td class="mono">${r.cpa>0?fmtE(r.cpa):'—'}</td><td class="${rc(r.roas)}">${r.roas>0?r.roas.toFixed(2)+'x':'—'}</td><td class="mono">${r.ctr>0?r.ctr.toFixed(2)+'%':'—'}</td><td class="mono">${r.cpm>0?fmtE(r.cpm):'—'}</td><td class="mono">${r.freq>0?r.freq.toFixed(1):'—'}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div id="creativeSection"></div>`;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('meta_token');
+  if (saved) { TOKEN = saved; document.getElementById('main').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>'; loadData(); }
+});
+</script>
+</body>
+</html>
