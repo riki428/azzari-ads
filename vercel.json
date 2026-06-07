@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/meta", "destination": "/api/meta" },
-    { "source": "/(.*)", "destination": "/public/index.html" }
+    { "source": "/api/meta", "destination": "/meta.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
